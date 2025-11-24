@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CashMate: Interactive Project Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        nav a {
+            transition: all 0.2s ease-in-out;
+        }
+        .nav-active {
+            color: #2563eb;
+            font-weight: 600;
+            border-bottom-color: #2563eb;
+        }
+        .section-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 1rem;
+        }
+        .section-subtitle {
+            font-size: 1.125rem;
+            color: #4b5563;
+            margin-bottom: 2.5rem;
+            max-width: 3xl;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .feature-tab {
+            cursor: pointer;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+            transition: all 0.2s ease;
+        }
+        .feature-tab:hover {
+            background-color: #f3f4f6;
+        }
+        .feature-tab-active {
+            background-color: #dbeafe;
+            color: #1d4ed8;
+            font-weight: 600;
+        }
+        .feature-content {
+            display: none;
+        }
+        .feature-content-active {
+            display: block;
+        }
+        .arch-tab {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            background-color: #e5e7eb;
+            color: #374151;
+            transition: all 0.2s ease;
+        }
+        .arch-tab-active {
+            background-color: #2563eb;
+            color: #ffffff;
+        }
+        .db-toggle {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            background-color: #e5e7eb;
+            color: #374151;
+            transition: all 0.2s ease;
+        }
+        .db-toggle-active {
+            background-color: #1f2937;
+            color: #ffffff;
+        }
+        .db-content {
+            display: none;
+        }
+        .db-content-active {
+            display: block;
+        }
+        .flow-step {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .flow-step-highlight {
+            transform: scale(1.03);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            border-color: #2563eb !important;
+        }
+        .chart-container {
+            position: relative;
+            height: 350px;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            max-height: 400px;
+        }
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 300px;
+            }
+        }
+    </style>
+    <!-- Chosen Palette: Calm Neutrals with Blue Accent -->
+    <!-- Application Structure Plan: Designed a thematic, single-page application with a fixed navigation bar. The structure flows logically from the project's "what/why" (Home, Problem) to its "how" (Features, Architecture) and "so what" (Results, Future). This is more intuitive for exploration than the report's linear chapter-by-chapter format. User flow is guided by nav links (smooth scroll) and interactive tabs/toggles within sections (e.g., Features, Architecture) to reveal information progressively, preventing overwhelm. -->
+    <!-- Visualization & Content Choices:
+        - Report: Problem Statement vs. Objectives -> Goal: Compare -> Viz: Side-by-side HTML/Tailwind cards -> Interaction: None (static comparison) -> Justification: Clearly contrasts the problem and solution.
+        - Report: Functional Requirements (5 modules) -> Goal: Organize -> Viz: Vertical Tabs -> Interaction: Click-to-reveal content pane -> Justification: Manages a large amount of text cleanly, allowing users to select their area of interest.
+        - Report: Tech Stack -> Goal: Inform -> Viz: Styled HTML grid/cards -> Interaction: None -> Justification: More visually appealing and modern than a simple table.
+        - Report: System Architecture (3-Tier) -> Goal: Organize/Inform -> Viz: HTML/Tailwind diagram -> Interaction: None (static flow) -> Justification: Visually represents the abstract concept without using banned SVG/Mermaid.
+        - Report: Sequence Diagram (Adding Expense) -> Goal: Change/Process -> Viz: Interactive HTML/Tailwind flow diagram -> Interaction: Click-to-highlight steps -> Justification: Makes a complex process (API call, DB, Socket) easy to follow step-by-step.
+        - Report: Database Design (Tables) -> Goal: Inform -> Viz: Toggleable HTML tables -> Interaction: Click-to-show/hide -> Justification: Hides complex data by default, reducing clutter.
+        - Report: Experimental Outcomes (Latency, PDF Gen) -> Goal: Inform/Compare -> Viz: Bar Chart (Chart.js) -> Interaction: Hover tooltips -> Justification: Quantifies the project's success metrics visually. Library: Chart.js (Canvas).
+        -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="text-neutral-800">
+
+    <!-- Header & Navigation -->
+    <header class="sticky top-0 z-50 w-full bg-white/95 shadow-sm backdrop-blur-md">
+        <nav class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex-shrink-0 flex items-center">
+                    <span class="text-2xl font-bold text-blue-600">CashMate</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#home" class="nav-link px-3 py-2 text-sm font-medium text-neutral-600 hover:text-blue-600 border-b-2 border-transparent nav-active">Home</a>
+                        <a href="#problem" class="nav-link px-3 py-2 text-sm font-medium text-neutral-600 hover:text-blue-600 border-b-2 border-transparent">Problem & Solution</a>
+                        <a href="#features" class="nav-link px-3 py-2 text-sm font-medium text-neutral-600 hover:text-blue-600 border-b-2 border-transparent">Features</a>
+                        <a href="#architecture" class="nav-link px-3 py-2 text-sm font-medium text-neutral-600 hover:text-blue-600 border-b-2 border-transparent">Architecture</a>
+                        <a href="#results" class="nav-link px-3 py-2 text-sm font-medium text-neutral-600 hover:text-blue-600 border-b-2 border-transparent">Results & Future</a>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-neutral-400 hover:text-neutral-500 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                        <svg class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <!-- Mobile menu, show/hide based on menu state. -->
+        <div class="md:hidden hidden" id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#home" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-neutral-700 hover:text-blue-600 hover:bg-neutral-50 nav-active">Home</a>
+                <a href="#problem" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-neutral-700 hover:text-blue-600 hover:bg-neutral-50">Problem & Solution</a>
+                <a href="#features" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-neutral-700 hover:text-blue-600 hover:bg-neutral-50">Features</a>
+                <a href="#architecture" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-neutral-700 hover:text-blue-600 hover:bg-neutral-50">Architecture</a>
+                <a href="#results" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-neutral-700 hover:text-blue-600 hover:bg-neutral-50">Results & Future</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+
+        <!-- Section 1: Home -->
+        <section id="home" class="text-center pt-16">
+            <h1 class="text-4xl md:text-5xl font-bold text-blue-600">CashMate</h1>
+            <p class="mt-4 text-xl md:text-2xl font-light text-neutral-600">A Smart Money Splitter & Expense Organizer WebApp</p>
+            <p class="mt-8 max-w-3xl mx-auto text-lg text-neutral-700">
+                This project facilitates transparent, secure, and real-time expense management for groups. It solves common issues like hidden charges, privacy concerns from phone-based logins, and static interfaces. Built on the MERN stack, CashMate is a full-stack solution for modern financial collaboration.
+            </p>
+            <div class="mt-12 grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <span class="text-3xl">🔒</span>
+                    <h3 class="text-lg font-semibold mt-4">Privacy-First</h3>
+                    <p class="text-sm text-neutral-600 mt-2">Email & JWT login. No phone numbers required.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <span class="text-3xl">⚡</span>
+                    <h3 class="text-lg font-semibold mt-4">Real-Time Sync</h3>
+                    <p class="text-sm text-neutral-600 mt-2">Socket.io integration for instant updates and chat.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <span class="text-3xl">📄</span>
+                    <h3 class="text-lg font-semibold mt-4">PDF Reporting</h3>
+                    <p class="text-sm text-neutral-600 mt-2">Generate detailed, downloadable PDF bills.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <span class="text-3xl">💳</span>
+                    <h3 class="text-lg font-semibold mt-4">Flexible Payments</h3>
+                    <p class="text-sm text-neutral-600 mt-2">Includes EMI tracking for large debts & QR codes.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Problem & Solution -->
+        <section id="problem" class="mt-24 pt-16 text-center">
+            <h2 class="section-title">Problem & Solution</h2>
+            <p class="section-subtitle">
+                CashMate was designed to directly address the key failures of existing expense management tools. We identified four major pain points and built our objectives around solving them.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Problems -->
+                <div class="bg-white p-8 rounded-xl shadow-lg border-t-4 border-red-500">
+                    <h3 class="text-2xl font-semibold text-red-600">The Problem</h3>
+                    <ul class="mt-6 space-y-4 text-left">
+                        <li class="flex items-start">
+                            <span class="flex-shrink-0 text-xl text-red-500 mr-3">❌</span>
+                            <span><strong>Privacy Intrusion:</strong> Mandatory phone number registration exposes user data.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="flex-shrink-0 text-xl text-red-500 mr-3">❌</span>
+                            <span><strong>Lack of Documentation:</strong> No way to get a formal, printable PDF statement of expenses.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="flex-shrink-0 text-xl text-red-500 mr-3">❌</span>
+                            <span><strong>Rigid Payments:</strong> No support for tracking large debts paid back in installments (EMIs).</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="flex-shrink-0 text-xl text-red-500 mr-3">❌</span>
+                            <span><strong>Static Interfaces:</strong> Users must manually refresh to see updates from other group members.</span>
+                        </li>
+                    </ul>
+                </div>
+                <!-- Solutions -->
+                <div class="bg-white p-8 rounded-xl shadow-lg border-t-4 border-green-500">
+                    <h3 class="text-2xl font-semibold text-green-600">Our Solution (Objectives)</h3>
+                    <ul class="mt-6 space-y-4 text-left">
+                        <li class="flex items-start">
+                            <span class="flex-shrink-0 text-xl text-green-500 mr-3">✅</span>
+                            <span><strong>Enhance User Privacy:</strong> Use email-only sign-up with secure JWT authentication.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="flex-shrink-0 text-xl text-green-500 mr-3">✅</span>
+                            <span><strong>Provide Professional Reporting:</strong> Server-side PDF generation for auditable invoices.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="flex-shrink-0 text-xl text-green-500 mr-3">✅</span>
+                            <span><strong>Facilitate Flexible Repayment:</strong> A unique "EMI-style" module to track partial debt payments.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="flex-shrink-0 text-xl text-green-500 mr-3">✅</span>
+                            <span><strong>Enable Real-Time Collaboration:</strong> Integrate Socket.io so all changes are reflected instantly.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Features -->
+        <section id="features" class="mt-24 pt-16">
+            <h2 class="section-title text-center">Core Features</h2>
+            <p class="section-subtitle text-center">
+                The application is organized into five core modules. Click on any module to explore its specific functional requirements and capabilities.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Vertical Tabs -->
+                <div class="md:col-span-1 flex md:flex-col space-x-2 md:space-x-0 md:space-y-2 overflow-x-auto pb-2">
+                    <button class="feature-tab feature-tab-active whitespace-nowrap" data-target="feature-user">1. User Module</button>
+                    <button class="feature-tab whitespace-nowrap" data-target="feature-group">2. Group Module</button>
+                    <button class="feature-tab whitespace-nowrap" data-target="feature-expense">3. Expense Module</button>
+                    <button class="feature-tab whitespace-nowrap" data-target="feature-settlement">4. Settlement Module</button>
+                    <button class="feature-tab whitespace-nowrap" data-target="feature-comm">5. Communication</button>
+                </div>
+                <!-- Tab Content -->
+                <div class="md:col-span-3 bg-white p-8 rounded-xl shadow-lg min-h-[300px]">
+                    <div id="feature-user" class="feature-content feature-content-active">
+                        <h3 class="text-2xl font-semibold mb-4">User Module</h3>
+                        <ul class="list-disc list-inside space-y-2 text-neutral-700">
+                            <li><strong>Secure Registration:</strong> Sign up with email and password. Passwords are hashed using Bcrypt.</li>
+                            <li><strong>JWT-Based Login:</strong> Secure, stateless authentication with JSON Web Tokens.</li>
+                            <li><strong>Profile Management:</strong> Users can update their display name and avatar.</li>
+                        </ul>
+                    </div>
+                    <div id="feature-group" class="feature-content">
+                        <h3 class="text-2xl font-semibold mb-4">Group Module</h3>
+                        <ul class="list-disc list-inside space-y-2 text-neutral-700">
+                            <li><strong>Group Creation:</strong> Start a new group with a title and description (e.g., "Goa Trip").</li>
+                            <li><strong>Member Management:</strong> Add members to the group via email search.</li>
+                            <li><strong>Group Status:</strong> Ability to leave a group or remove other members (if creator).</li>
+                        </ul>
+                    </div>
+                    <div id="feature-expense" class="feature-content">
+                        <h3 class="text-2xl font-semibold mb-4">Expense Module</h3>
+                        <ul class="list-disc list-inside space-y-2 text-neutral-700">
+                            <li><strong>Add Expense:</strong> Record an expense with amount, description, payer, and date.</li>
+                            <li><strong>Dynamic Splitting:</strong> Support for splitting expenses equally, by exact amounts, or by percentage.</li>
+                            <li><strong>Expense History:</strong> Edit or delete existing expenses, with updates broadcast to the group.</li>
+                            <li><strong>Audit Logs:</strong> All expense modifications are tracked.</li>
+                        </ul>
+                    </div>
+                    <div id="feature-settlement" class="feature-content">
+                        <h3 class="text-2xl font-semibold mb-4">Settlement Module</h3>
+                        <ul class="list-disc list-inside space-y-2 text-neutral-700">
+                            <li><strong>Settle Up:</strong> Record a payment between users to clear outstanding debts.</li>
+                            <li><strong>QR Code Generation:</strong> Instantly generate a QR code for UPI payments.</li>
+                            <li><strong>EMI Tracker:</strong> Unique feature to record partial payments against a large debt, recalculating the remaining balance.</li>
+                        </ul>
+                    </div>
+                    <div id="feature-comm" class="feature-content">
+                        <h3 class="text-2xl font-semibold mb-4">Communication Module</h3>
+                        <ul class="list-disc list-inside space-y-2 text-neutral-700">
+                            <li><strong>Group Chat:</strong> A dedicated, real-time chat window for each group.</li>
+                            <li><strong>System Notifications:</strong> Automated messages in the chat ("User X added an expense of $50").</li>
+                            <li><strong>Real-Time Sync:</strong> Built with Socket.io for instant message delivery.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Architecture -->
+        <section id="architecture" class="mt-24 pt-16">
+            <h2 class="section-title text-center">How It's Built</h2>
+            <p class="section-subtitle text-center">
+                CashMate is built with a modern, scalable, and efficient set of technologies. The architecture is designed for performance, maintainability, and real-time responsiveness.
+            </p>
+
+            <div class="flex justify-center space-x-2 md:space-x-4 mb-8">
+                <button class="arch-tab arch-tab-active" data-target="arch-stack">Tech Stack</button>
+                <button class="arch-tab" data-target="arch-design">System Architecture</button>
+                <button class="arch-tab" data-target="arch-flow">System Flow</button>
+                <button class="arch-tab" data-target="arch-db">Database Design</button>
+            </div>
+
+            <div class="bg-white p-8 rounded-xl shadow-lg min-h-[400px]">
+                <!-- Tech Stack -->
+                <div id="arch-stack" class="arch-content arch-content-active">
+                    <h3 class="text-2xl font-semibold mb-6 text-center">Technology Stack</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
+                        <div class="flex items-center space-x-4 p-4 bg-neutral-50 rounded-lg">
+                            <img src="https://placehold.co/40x40/00D8FF/000000?text=R" class="rounded-full" alt="React">
+                            <div><h4 class="font-semibold">React.js</h4><p class="text-sm text-neutral-600">Frontend Library</p></div>
+                        </div>
+                        <div class="flex items-center space-x-4 p-4 bg-neutral-50 rounded-lg">
+                            <img src="https://placehold.co/40x40/8BC500/000000?text=N" class="rounded-full" alt="Node.js">
+                            <div><h4 class="font-semibold">Node.js</h4><p class="text-sm text-neutral-600">Backend Runtime</p></div>
+                        </div>
+                        <div class="flex items-center space-x-4 p-4 bg-neutral-50 rounded-lg">
+                            <img src="https://placehold.co/40x40/00D8FF/000000?text=E" class="rounded-full" alt="Express.js">
+                            <div><h4 class="font-semibold">Express.js</h4><p class="text-sm text-neutral-600">Backend Framework</p></div>
+                        </div>
+                        <div class="flex items-center space-x-4 p-4 bg-neutral-50 rounded-lg">
+                            <img src="https://placehold.co/40x40/4DB33D/000000?text=M" class="rounded-full" alt="MongoDB">
+                            <div><h4 class="font-semibold">MongoDB</h4><p class="text-sm text-neutral-600">NoSQL Database</p></div>
+                        </div>
+                        <div class="flex items-center space-x-4 p-4 bg-neutral-50 rounded-lg">
+                            <img src="https://placehold.co/40x40/000000/FFFFFF?text=S" class="rounded-full" alt="Socket.io">
+                            <div><h4 class="font-semibold">Socket.io</h4><p class="text-sm text-neutral-600">Real-time Engine</p></div>
+                        </div>
+                        <div class="flex items-center space-x-4 p-4 bg-neutral-50 rounded-lg">
+                            <img src="https://placehold.co/40x40/FF6C37/000000?text=J" class="rounded-full" alt="JWT">
+                            <div><h4 class="font-semibold">JWT</h4><p class="text-sm text-neutral-600">Authentication</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Architecture -->
+                <div id="arch-design" class="arch-content" style="display: none;">
+                    <h3 class="text-2xl font-semibold mb-6 text-center">3-Tier System Architecture</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                        <div class="bg-blue-100 p-6 rounded-lg text-center">
+                            <h4 class="text-xl font-semibold text-blue-800">1. Presentation Layer</h4>
+                            <p class="mt-2 text-blue-700"><strong>(React.js)</strong></p>
+                            <p class="mt-2 text-sm">Handles all UI rendering, user interaction, and state management. Runs in the user's browser.</p>
+                        </div>
+                        <div class="text-center text-4xl font-bold text-neutral-400">→</div>
+                        <div class="bg-neutral-100 p-6 rounded-lg text-center">
+                            <h4 class="text-xl font-semibold text-neutral-800">2. Business Logic Layer</h4>
+                            <p class="mt-2 text-neutral-700"><strong>(Node.js / Express.js)</strong></p>
+                            <p class="mt-2 text-sm">Contains all RESTful APIs, business logic (splitting), auth, and real-time socket events.</p>
+                        </div>
+                        <div class="hidden md:block"></div> <!-- Spacer -->
+                        <div class="text-center text-4xl font-bold text-neutral-400 md:transform md:rotate-90">↓</div>
+                        <div class="hidden md:block"></div> <!-- Spacer -->
+                        <div class="bg-green-100 p-6 rounded-lg text-center md:col-start-2">
+                            <h4 class="text-xl font-semibold text-green-800">3. Data Access Layer</h4>
+                            <p class="mt-2 text-green-700"><strong>(MongoDB / Mongoose)</strong></p>
+                            <p class="mt-2 text-sm">Manages all data persistence, schema validation, and database queries. Hosted on MongoDB Atlas.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Flow -->
+                <div id="arch-flow" class="arch-content" style="display: none;">
+                    <h3 class="text-2xl font-semibold mb-6 text-center">Interactive Flow: Adding an Expense</h3>
+                    <p class="text-center text-neutral-600 mb-6">Click each step to highlight it and follow the data flow.</p>
+                    <div class="space-y-4">
+                        <div class="flow-step p-4 border-2 border-transparent rounded-lg bg-neutral-50" data-step="1"><strong>1. User (Frontend):</strong> User fills the "Add Expense" form and clicks Submit.</div>
+                        <div class="text-center text-2xl text-neutral-400">↓</div>
+                        <div class="flow-step p-4 border-2 border-transparent rounded-lg bg-neutral-50" data-step="2"><strong>2. API Layer (Backend):</strong> Frontend sends a `POST /api/expense` request with data to the Express server.</div>
+                        <div class="text-center text-2xl text-neutral-400">↓</div>
+                        <div class="flow-step p-4 border-2 border-transparent rounded-lg bg-neutral-50" data-step="3"><strong>3. Controller (Backend):</strong> The server validates the data, calculates individual shares, and prepares the database entry.</div>
+                        <div class="text-center text-2xl text-neutral-400">↓</div>
+                        <div class="flow-step p-4 border-2 border-transparent rounded-lg bg-neutral-50" data-step="4"><strong>4. Database (MongoDB):</strong> The new expense record is saved, and user balances are updated.</div>
+                        <div class="text-center text-2xl text-neutral-400">↓</div>
+                        <div class="flow-step p-4 border-2 border-transparent rounded-lg bg-neutral-50" data-step="5"><strong>5. Socket Layer (Backend):</strong> Server emits a `new_expense` event to all other members in that group's "room".</div>
+                        <div class="text-center text-2xl text-neutral-400">↓</div>
+                        <div class="flow-step p-4 border-2 border-transparent rounded-lg bg-neutral-50" data-step="6"><strong>6. All Clients (Frontend):</strong> All group members receive the event, re-fetch data, and their UI updates instantly.</div>
+                    </div>
+                </div>
+
+                <!-- Database Design -->
+                <div id="arch-db" class="arch-content" style="display: none;">
+                    <h3 class="text-2xl font-semibold mb-6 text-center">Database Design (Data Dictionary)</h3>
+                    <div class="flex justify-center space-x-4 mb-6">
+                        <button class="db-toggle db-toggle-active" data-target="db-users">Users Collection</button>
+                        <button class="db-toggle" data-target="db-expenses">Expenses Collection</button>
+                    </div>
+                    
+                    <div id="db-users" class="db-content db-content-active overflow-x-auto">
+                        <h4 class="text-lg font-semibold mb-2">users</h4>
+                        <table class="min-w-full divide-y divide-neutral-200">
+                            <thead class="bg-neutral-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Field</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Type</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-neutral-200">
+                                <tr><td class="px-6 py-4">_id</td><td class="px-6 py-4">ObjectId</td><td class="px-6 py-4">Unique identifier (PK)</td></tr>
+                                <tr><td class="px-6 py-4">email</td><td class="px-6 py-4">String</td><td class="px-6 py-4">User's unique email (Indexed)</td></tr>
+                                <tr><td class="px-6 py-4">password</td><td class="px-6 py-4">String</td><td class="px-6 py-4">Bcrypt hashed password</td></tr>
+                                <tr><td class="px-6 py-4">name</td><td class="px-6 py-4">String</td><td class="px-6 py-4">Full display name</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div id="db-expenses" class="db-content overflow-x-auto">
+                        <h4 class="text-lg font-semibold mb-2">expenses</h4>
+                         <table class="min-w-full divide-y divide-neutral-200">
+                            <thead class="bg-neutral-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Field</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Type</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-neutral-200">
+                                <tr><td class="px-6 py-4">description</td><td class="px-6 py-4">String</td><td class="px-6 py-4">Title of the expense (e.g., "Dinner")</td></tr>
+                                <tr><td class="px-6 py-4">amount</td><td class="px-6 py-4">Number</td><td class="px-6 py-4">Total cost</td></tr>
+                                <tr><td class="px-6 py-4">paidBy</td><td class="px-6 py-4">ObjectId</td><td class="px-6 py-4">Reference to `Users` collection</td></tr>
+                                <tr><td class="px-6 py-4">group</td><td class="px-6 py-4">ObjectId</td><td class="px-6 py-4">Reference to `Groups` collection</td></tr>
+                                <tr><td class="px-6 py-4">splitMethod</td><td class="px-6 py-4">String</td><td class="px-6 py-4">Enum: ['equal', 'exact', 'percent']</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Results & Future -->
+        <section id="results" class="mt-24 pt-16">
+            <h2 class="section-title text-center">Results & Future Scope</h2>
+            <p class="section-subtitle text-center">
+                The project was successfully implemented, tested, and benchmarked. The results confirm the viability of the solution and open pathways for future development.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Testing & Results -->
+                <div class="bg-white p-8 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-semibold mb-6">Testing & Performance</h3>
+                    <p class="text-neutral-600 mb-6">A multi-level testing strategy ensured the application's reliability and performance.</p>
+                    <div class="space-y-4 mb-8">
+                        <div class="bg-neutral-50 p-4 rounded-lg"><strong>Unit Testing:</strong> Ensured mathematical accuracy of the `calculateSplit()` function, including handling fractions and edge cases.</div>
+                        <div class="bg-neutral-50 p-4 rounded-lg"><strong>Integration Testing:</strong> Verified that adding an expense correctly updated the group balance and triggered a socket event.</div>
+                        <div class="bg-neutral-50 p-4 rounded-lg"><strong>Cross-Browser Testing:</strong> Confirmed layout and functionality were consistent across Chrome, Firefox, and Edge.</div>
+                    </div>
+                    
+                    <h4 class="text-xl font-semibold mb-4">Key Performance Metrics</h4>
+                    <div class="chart-container">
+                        <canvas id="resultsChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Future Scope -->
+                <div class="bg-white p-8 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-semibold mb-6">Future Scope</h3>
+                    <p class="text-neutral-600 mb-6">The current application serves as a robust Minimum Viable Product (MVP). Future iterations will focus on adding advanced intelligence and accessibility features.</p>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <span class="flex-shrink-0 text-xl text-blue-500 mr-3">🤖</span>
+                            <div><strong>ML Categorization:</strong> Use NLP to automatically categorize expenses (e.g., "McDonald's" → "Food").</div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="flex-shrink-0 text-xl text-blue-500 mr-3">🧾</span>
+                            <div><strong>OCR Receipt Scanning:</strong> Integrate Google Vision API to scan physical receipts and auto-fill the expense form.</div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="flex-shrink-0 text-xl text-blue-500 mr-3">🌍</span>
+                            <div><strong>Multi-Currency Support:</strong> Use live forex APIs to handle expenses from international trips.</div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="flex-shrink-0 text-xl text-blue-500 mr-3">📱</span>
+                            <div><strong>Native Mobile Apps:</strong> Port the React codebase to React Native for deployment on the iOS App Store and Google Play Store.</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="mt-24 bg-neutral-800 text-neutral-300">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center">
+            <p>CashMate Interactive Project Report</p>
+            <p class="text-sm text-neutral-400 mt-1">Based on the Final Year Project for Brainware University</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // --- Mobile Menu Toggle ---
+            const menuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const svgs = menuButton.querySelectorAll('svg');
+            
+            menuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+                svgs[0].classList.toggle('hidden');
+                svgs[1].classList.toggle('hidden');
+            });
+
+            // --- Smooth Scroll & Active Nav Link ---
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            function onScroll() {
+                let currentSection = '';
+                const sections = document.querySelectorAll('section');
+                
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (window.scrollY >= sectionTop - 100) {
+                        currentSection = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('nav-active', 'bg-blue-100', 'text-blue-700');
+                    if (link.getAttribute('href') === `#${currentSection}`) {
+                        link.classList.add('nav-active');
+                        // Add active state for mobile
+                        if(link.closest('#mobile-menu')) {
+                            link.classList.add('bg-blue-100', 'text-blue-700');
+                        }
+                    }
+                });
+            }
+            
+            window.addEventListener('scroll', onScroll);
+            onScroll(); // Run on load
+
+            navLinks.forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    document.querySelector(targetId).scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    
+                    // Close mobile menu on click
+                    if (mobileMenu.classList.contains('hidden') === false) {
+                        mobileMenu.classList.add('hidden');
+                        svgs[0].classList.remove('hidden');
+                        svgs[1].classList.add('hidden');
+                    }
+                });
+            });
+
+            // --- Feature Tabs ---
+            const featureTabs = document.querySelectorAll('.feature-tab');
+            const featureContents = document.querySelectorAll('.feature-content');
+            
+            featureTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const target = tab.dataset.target;
+                    
+                    featureTabs.forEach(t => t.classList.remove('feature-tab-active'));
+                    tab.classList.add('feature-tab-active');
+                    
+                    featureContents.forEach(c => {
+                        c.classList.remove('feature-content-active');
+                        if (c.id === target) {
+                            c.classList.add('feature-content-active');
+                        }
+                    });
+                });
+            });
+
+            // --- Architecture Tabs ---
+            const archTabs = document.querySelectorAll('.arch-tab');
+            const archContents = document.querySelectorAll('.arch-content');
+            
+            archTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const target = tab.dataset.target;
+                    
+                    archTabs.forEach(t => t.classList.remove('arch-tab-active'));
+                    tab.classList.add('arch-tab-active');
+                    
+                    archContents.forEach(c => {
+                        c.style.display = 'none';
+                        if (c.id === target) {
+                            c.style.display = 'block';
+                        }
+                    });
+                });
+            });
+
+            // --- Database Toggles ---
+            const dbToggles = document.querySelectorAll('.db-toggle');
+            const dbContents = document.querySelectorAll('.db-content');
+            
+            dbToggles.forEach(toggle => {
+                toggle.addEventListener('click', () => {
+                    const target = toggle.dataset.target;
+                    
+                    dbToggles.forEach(t => t.classList.remove('db-toggle-active'));
+                    toggle.classList.add('db-toggle-active');
+                    
+                    dbContents.forEach(c => {
+                        c.classList.remove('db-content-active');
+                        if (c.id === target) {
+                            c.classList.add('db-content-active');
+                        }
+                    });
+                });
+            });
+
+            // --- Interactive Flow Diagram ---
+            const flowSteps = document.querySelectorAll('.flow-step');
+            flowSteps.forEach(step => {
+                step.addEventListener('click', () => {
+                    flowSteps.forEach(s => s.classList.remove('flow-step-highlight'));
+                    step.classList.add('flow-step-highlight');
+                });
+            });
+
+            // --- Results Chart ---
+            const ctx = document.getElementById('resultsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Real-time Update Latency (ms)', 'Avg. PDF Generation (s)', 'Database Connection (ms)'],
+                    datasets: [{
+                        label: 'Performance Metrics',
+                        data: [180, 2.8, 50],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.6)',
+                            'rgba(34, 197, 94, 0.6)',
+                            'rgba(239, 68, 68, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(59, 130, 246, 1)',
+                            'rgba(34, 197, 94, 1)',
+                            'rgba(239, 68, 68, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    indexAxis: 'y',
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Time'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.x !== null) {
+                                        label += context.parsed.x + (context.label.includes('ms') ? ' ms' : ' s');
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+        });
+    </script>
+</body>
+</html>
